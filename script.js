@@ -62,6 +62,13 @@ class Player {
         if (mouse.y != this.y){
             this.y -= dy/20;
         }
+        // Swim animation
+        if (gameFrame % 5 == 0){
+            this.frameX++;
+            this.frameY += this.frameX == 4 ? 1 : 0;
+            this.frameX %= 4;
+            this.frameY %= 3;
+        }
     }
     draw(){
         if (mouse.click){
@@ -207,8 +214,6 @@ class Enemy {
             this.x = canvas.width + 200;
             this.y = Math.random() * (canvas.height - 150) + 90;
             this.speed = Math.random() * 2 + 2;
-            enemyImage.src = 'enemySprites/__' + randomColorEnemy + '_cartoon_fish_01_swim.png';
-
         }
         // Swim animation
         if (gameFrame % 5 == 0){
