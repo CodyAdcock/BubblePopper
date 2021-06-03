@@ -6,3 +6,4 @@ Sprites from [gamedeveloperstudio.com](https://www.gamedeveloperstudio.com/index
 
 Sounds from [opengameart.org](https://opengameart.org/art-search-advanced?keys=&field_art_type_tid%5B%5D=13&sort_by=count&sort_order=DESC)
 
+[Current place in tutorial](https://youtu.be/MwTQtPGuBmo?t=465)
