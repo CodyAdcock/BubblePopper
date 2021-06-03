@@ -9,6 +9,8 @@ let gameFrame = 0;
 ctx.font = '50px Georgia';
 let gameSpeed = 1;
 let gameOver = false;
+let paused = false;
+let startButton;
 
 let colorPlayer = 'blue';
 const colorsPlayer = ['black', 'blue', 'green', 'purple', 'red', 'yellow'];
@@ -238,13 +240,27 @@ function handleEnemies(){
     enemy1.update();
 }
 
+const replayButton = new Image();
+replayButton.src = 'buttons/play-button.png';
+
 function handleGameOver(){
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.fillText('GAME OVER!', canvas.width/ 2, canvas.height / 2 - 40);
     ctx.fillText('you reached score: ' + score, canvas.width / 2, canvas.height / 2 + 40);
+    ctx.fillText('play again?', canvas.width / 2, canvas.height / 2 + 220);
+    ctx.drawImage(replayButton,canvas.width / 2 - 50,  canvas.height / 2 + 80, 100, 100 );
 
     gameOver = true;
+}
+
+function togglePause(){
+    if(!paused){
+        paused = true;
+    } else if (!gameOver){
+        paused = false;
+        animate();
+    }
 }
 
 //Animation Loop
@@ -259,10 +275,21 @@ function animate(){
     ctx.textAlign = 'center';
     ctx.fillText('score: ' + score, 100, 50);
     gameFrame++;
-    if (!gameOver) requestAnimationFrame(animate);
+    if (!gameOver && !paused) requestAnimationFrame(animate);
 }
 animate();
+replayButton.onclick = function(){
+    console.log('click');
+    handleRestart();
+}
 
 window.addEventListener('resize', function(){
     canvasPosition = canvas.getBoundingClientRect();
 })
+window.addEventListener('keydown', function (e) {
+    var key = e.keyCode;
+    if (key === 80)// p key
+    {
+        togglePause();
+    }
+    });
