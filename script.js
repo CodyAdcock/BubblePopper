@@ -31,6 +31,9 @@ canvas.addEventListener('mousedown', function(event){
     mouse.click = true;
     mouse.x = event.x - canvasPosition.left;
     mouse.y = event.y - canvasPosition.top;
+    if ( mouse.x >= 720 && mouse.y <= 80 ){
+        togglePause();
+    }
 });
 canvas.addEventListener('mouseup', function(){
     mouse.click = false;    
@@ -58,27 +61,36 @@ class Player {
         const dy = this.y - mouse.y;
         let theta = Math.atan2(dy, dx); 
         this.angle = theta;
-        if (mouse.x != this.x){
-            this.x -= dx/20;
+        if ( mouse.x >= 720 && mouse.y <= 80 ){
+
+        } else {
+            if (mouse.x != this.x){
+                this.x -= dx/20;
+            }
+            if (mouse.y != this.y){
+                this.y -= dy/20;
+            }
+            // Swim animation
+            if (gameFrame % 5 == 0){
+                this.frameX++;
+                this.frameY += this.frameX == 4 ? 1 : 0;
+                this.frameX %= 4;
+                this.frameY %= 3;
+            }
         }
-        if (mouse.y != this.y){
-            this.y -= dy/20;
-        }
-        // Swim animation
-        if (gameFrame % 5 == 0){
-            this.frameX++;
-            this.frameY += this.frameX == 4 ? 1 : 0;
-            this.frameX %= 4;
-            this.frameY %= 3;
-        }
+        
     }
     draw(){
-        if (mouse.click){
-            ctx.lineWidth = 0.2;
-            ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.stroke();
+        if ( mouse.x >= 720 && mouse.y <= 80 ){
+
+        } else {
+            if (mouse.click){
+                ctx.lineWidth = 0.2;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(mouse.x, mouse.y);
+                ctx.stroke();
+            }
         }
         // Hitbox
         /*ctx.fillStyle = 'red';
@@ -100,7 +112,7 @@ class Player {
         ctx.restore();
     }
 }
-const player = new Player();
+let player = new Player();
 
 //Bubbles
 const bubblesArray = [];
@@ -186,6 +198,43 @@ function handleBackgroud(){
     ctx.drawImage(background, BG.x2, BG.y, BG.width, BG.height);
 }
 
+//Buttons
+const replayButton = new Image();
+replayButton.src = 'buttons/buttons.png';
+class myButton {
+    constructor(){
+        this.x = canvas.width;
+        this.y = canvas.height;
+        this.radius = 50;
+        this.frameX = 0;
+        this.frameY = 0;
+        this.frame = 0;
+        this.spriteWidth = 500;
+        this.spriteHeight = 500;
+    }
+    update(){
+        if (gameOver){
+            this.frameX = 2;
+            console.log('work?');
+        }else if(!paused){
+            this.frameX = 0;
+        }else if (paused){
+            this.frameX = 1;
+        }
+    }
+    draw(){
+        ctx.drawImage(replayButton, this.frameX * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x -80, 5, 75, 75);
+
+    }
+
+}
+
+let button = new myButton();
+function handleButtons(){
+    button.draw();
+    button.update();
+}
+
 //Enemies
 const enemyImage = new Image();
 enemyImage.src = 'enemySprites/__' + randomColorEnemy + '_cartoon_fish_01_swim.png';
@@ -234,39 +283,55 @@ class Enemy {
     }
 }
 
-const enemy1 = new Enemy();
+let enemy1 = new Enemy();
 function handleEnemies(){
     enemy1.draw();
     enemy1.update();
 }
-
-const replayButton = new Image();
-replayButton.src = 'buttons/play-button.png';
 
 function handleGameOver(){
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.fillText('GAME OVER!', canvas.width/ 2, canvas.height / 2 - 40);
     ctx.fillText('you reached score: ' + score, canvas.width / 2, canvas.height / 2 + 40);
-    ctx.fillText('play again?', canvas.width / 2, canvas.height / 2 + 220);
-    ctx.drawImage(replayButton,canvas.width / 2 - 50,  canvas.height / 2 + 80, 100, 100 );
-
+    ctx.fillText('press P to play again', canvas.width / 2, canvas.height / 2 + 220);
     gameOver = true;
 }
 
 function togglePause(){
-    if(!paused){
+    if(gameOver){
+        button.update();
+        resetGame();
+        animate();
+    }else if(!paused){
         paused = true;
-    } else if (!gameOver){
+        button.update();
+    } else {
         paused = false;
+        button.update();
         animate();
     }
+}
+
+function resetGame(){
+    score = 0;
+    enemy1 = new Enemy();
+    player = new Player();
+    gameOver = false;
+    mouse.x = 400;
+    mouse.y = 250;
+    randomColorPlayer = colorsPlayer[Math.floor(Math.random()*colorsPlayer.length)];
+    randomColorEnemy = colorsEnemy[Math.floor(Math.random()*colorsEnemy.length)];
+    enemyImage.src = 'enemySprites/__' + randomColorEnemy + '_cartoon_fish_01_swim.png';
+    playerLeft.src = 'fishSprites/fish_swim_left_' + randomColorPlayer + '.png';
+    playerRight.src = 'fishSprites/fish_swim_right_' + randomColorPlayer + '.png';
 }
 
 //Animation Loop
 function animate(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     handleBackgroud();
+    handleButtons();
     handleBubbles();
     player.update();
     player.draw();
@@ -274,14 +339,12 @@ function animate(){
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.fillText('score: ' + score, 100, 50);
-    gameFrame++;
+        gameFrame++;
     if (!gameOver && !paused) requestAnimationFrame(animate);
+    button.update();
+    button.draw();
 }
 animate();
-replayButton.onclick = function(){
-    console.log('click');
-    handleRestart();
-}
 
 window.addEventListener('resize', function(){
     canvasPosition = canvas.getBoundingClientRect();
